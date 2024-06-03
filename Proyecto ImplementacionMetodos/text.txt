@@ -1,0 +1,4 @@
+quiero un file de int porqué varchar no est´pa dentro de mi main ppr si hago un import va a haber un else como un endl
+
+
+donde = sera un for for for o algo así no?? lsnd =

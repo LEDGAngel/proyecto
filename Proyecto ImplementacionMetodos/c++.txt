@@ -1,0 +1,11 @@
+int main() {
+    int edad = 3;
+    double precio = 12.50;
+    char letra = 'a';
+
+    std::cout << "Edad: " << edad << std::endl;
+    std::cout << "Precio: " << precio << std::endl;
+    std::cout << "Letra: " << letra << std::endl;
+
+    return 0;
+}

@@ -1,0 +1,4 @@
+select customerName from clientes where customerName like ('%Co.%');
+SELECT * FROM clientes;
+SELECT nombre, apellido, correo_electronico FROM clientes;
+SELECT * FROM clientes WHERE ciudad = 'Monterrey';

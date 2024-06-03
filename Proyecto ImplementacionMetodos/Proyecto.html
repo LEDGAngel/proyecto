@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subrayar palabras predefinidas en archivo de texto</title>
+</head>
+<body>
+    <h1>Subrayar palabras predefinidas en archivo de texto</h1>
+    <input type="file" id="fileInput" accept=".txt">
+    <div id="output" style="margin-top: 20px;"></div>
+    <br/>
+    <div id="resultado"></div>
+
+    <script>
+        // Nuestras palabras predefinidas
+        let palabrasPedefinidasPython = ["int", "if", "for", "float", "print", "main", "import", "else", "endl", "=", "def"];
+        let palabrasPedefinidasC = ["int", "if", "for", "float", "print", "main", "ifstream", "else", "double", "=", "char", "main()"];
+        let palabrasPedefinidasSQL = ["select", "SELECT", "as", "inner join", "distinct", "from", "on", "like", "not", "in", "where", "=", "null", 
+        "group by", "having"];
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const content = event.target.result;
+
+                // Divide en párrafos
+                const paragraphs = content.split(/\r?\n/);
+
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = ''; // Limpiar el contenido previo
+
+                // Divide en palabras y subraya palabras predefinidas
+                paragraphs.forEach(paragraph => {
+                    const words = paragraph.split(/\s+/);
+                    const paragraphDiv = document.createElement('div');
+
+                    words.forEach(word => {
+                        const span = document.createElement('span');
+                        span.textContent = word + ' '; 
+                        // Verifica si está dentro o no de las palabras reservadas.
+                        if (palabrasPedefinidasPython.includes(word)) {
+                            span.style.textDecoration = 'underline';
+                        }
+                        else if (palabrasPedefinidasC.includes(word)) {
+                            span.style.textDecoration = 'underline';
+                        }
+                        else if (palabrasPedefinidasSQL.includes(word)) {
+                            span.style.textDecoration = 'underline';
+                        }
+                        paragraphDiv.appendChild(span);
+                    });
+
+                    outputDiv.appendChild(paragraphDiv);
+                });
+
+                // Evaluar si el texto contiene una definición de función en Python
+                evaluarPython(paragraphs);
+
+                // Evaluar si el texto es válido para un archivo de python
+                //evaluarTextoPython(paragraphs);
+            };
+
+            reader.readAsText(file);
+        });
+
+        function evaluarSQL(paragraphs) {
+            const lines = paragraphs;
+            let esSQL = false;
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let match1 = line.match(/^\s*select\s{1}([_a-zA-Z0-9\*]+(,\s*[_a-zA-Z0-9\*]+)*)*\s+from\s+[_a-zA-Z0-9]+(?:\s+where\s+(.+))?;$/);
+                if (match1) {
+                    esSQL = true;
+                    if (i = lines.length-1) {
+                        return esSQL;
+                    }
+                }
+                else {
+                    esSQL = false;
+                    return esSQL;
+                }
+                
+            }
+        }
+
+        function evaluarC(paragraphs) {
+            const lines = paragraphs;
+            let esC = false;
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i]
+                // Verificar la sintaxis de la línea de definición de la función
+                if (lines[0].startsWith("int main()")){
+                    if (line.includes("std")){
+                        let match2 = line.match(/^\s*std::cout{1}(\s+<<+\s+[a-zA-Z0-9":]+\s+)+std::endl;{1}$/);
+                        if (match2) {
+                            esC = true;
+                            if (i = lines.length-1) {
+                                return esC;
+                            }
+                        }
+                        else {
+                            esC = false;
+                            return esC;
+                        }
+                    
+                    }
+                    match2 = line.match(/^\s*[_a-zA-Z0-9]+\s+[_a-zA-Z0-9]+=*['"a-zA-Z0-9]*;{1}$/);
+                    if (match2) {
+                        esC = true;
+                        if (i = lines.length-1) {
+                            return esC;
+                        }
+                    }
+                } else {
+                    return esC;
+                }
+            }
+        }
+        
+
+        function evaluarPython(paragraphs) {
+            const lines = paragraphs;
+            let esFuncion = false;
+            let esPython = false;
+            let nombreFuncion = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (line.startsWith('def')) {
+                    // Verificar la sintaxis de la línea de definición de la función
+                    let match = line.match(/^def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^)]*)\)\s*:/);
+                    if (match) {
+                        esFuncion = true;
+                        nombreFuncion = match[1];
+                        // Detener la búsqueda después de encontrar la definición de la función
+                    }
+                }
+                else if (line.includes('=')) {
+                    match = line.match(/^[_a-zA-Z]+[_a-zA-Z0-9_]*\s*={1}\s*([true|false]*[0-9]*[a-zA-Z]*[*\[a-zA-Z0-9,\]]*)/);
+                    if (match) {
+                        esPython = true;
+                    }
+                    else {
+                        esPython = false;
+                        break;
+                        // Detiene la busqueda si algun renglon no cumple con la regla
+                    }
+                }
+            
+            }
+
+       
+       
+
+            // Mostrar el resultado
+            let resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = '';
+            let SQLprueba = evaluarSQL(paragraphs);
+            let Cprueba = evaluarC(paragraphs);
+            console.log(Cprueba);
+            if (esFuncion && esPython) {
+                resultadoDiv.textContent = `El texto proporcionado SI contiene la definición de la función ${nombreFuncion} de Python. El texto proporcionado es valido en formato Python.`;
+                //resultadoDiv.textContent = "El texto proporcionado es valido en formato Python.";
+            } 
+            else if (esPython){
+                resultadoDiv.textContent = 'El texto proporcionado es valido en formato Python.';
+            } else if (esFuncion) {
+                resultadoDiv.textContent = `El texto proporcionado SI contiene la definición de la función ${nombreFuncion} de Python.`;
+            } else if (SQLprueba){
+                resultadoDiv.textContent = 'El texto proporcionado es valido en formato SQL.';
+            } else if (Cprueba){
+                resultadoDiv.textContent = 'El texto proporcionado es valido en formato C++.';
+            } else {
+                resultadoDiv.textContent = 'El texto proporcionado NO contiene una definición en formato Python ni C++ ni SQL.';
+            }
+        }
+    </script>
+</body>
+</html>
